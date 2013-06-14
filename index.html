@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Capdrupal : A set of capistrano recipies for working with drupal " />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Capdrupal</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/antistatique/capdrupal">View on GitHub</a>
+
+          <h1 id="project_title">Capdrupal</h1>
+          <h2 id="project_tagline">A set of capistrano recipies for working with drupal </h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/antistatique/capdrupal/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/antistatique/capdrupal/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="capdrupal" class="anchor" href="#capdrupal"><span class="octicon octicon-link"></span></a>Capdrupal</h1>
+
+<p>This gem provides a number of tasks which are useful for deploying Drupal projects with <a href="https://github.com/capistrano/capistrano">Capistrano</a>. </p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<h3>
+<a name="vendors" class="anchor" href="#vendors"><span class="octicon octicon-link"></span></a>Vendors</h3>
+
+<p>Your Ruby version must be highter than 1.3.0 and these <a href="http://rubygems.org">gems</a> must be installed on your system first.</p>
+
+<ul>
+<li>capistrano</li>
+<li>railsless-deploy</li>
+</ul><p>One by one</p>
+
+<pre><code>$ gem install capistrano
+$ gem install railsless-deploy
+</code></pre>
+
+<p>If you don't know if it's already install, check the list of your installed gems.</p>
+
+<pre><code>$ gem query --local
+</code></pre>
+
+<p>Finally install the capistrano-drupal recipes as a gem or manually from Github.</p>
+
+<h3>
+<a name="from-rubygemsorg" class="anchor" href="#from-rubygemsorg"><span class="octicon octicon-link"></span></a>From RubyGems.org</h3>
+
+<pre><code>$ gem install capdrupal
+</code></pre>
+
+<h3>
+<a name="from-github" class="anchor" href="#from-github"><span class="octicon octicon-link"></span></a>From Github</h3>
+
+<pre><code>$ git clone git://github.com/antistatique/capdrupal.git
+$ cd capdrupal
+$ gem build capdrupal.gemspec
+$ gem install capdrupal-{version}.gem
+</code></pre>
+
+<h2>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>It's highly recommended to use Git in your project, but you can also use Subversion or your favorite versionning software. This tutorial his made for multistage deployment, but you can easily use it just for one target. </p>
+
+<p>First, go to your project directory and launch Capistrano.</p>
+
+<pre><code>$ cd path/to/your/directory/
+$ capify .
+</code></pre>
+
+<p>Capistrano create two files <code>capfile</code> and <code>config/deploy.rb</code>. Open <code>capfile</code> and set the depencies.</p>
+
+<pre><code>require 'rubygems'
+require 'railsless-deploy'
+require 'capistrano-drupal'
+load    'config/deploy'
+</code></pre>
+
+<p>Then, go to <code>config/deploy.rb</code> to set the parameters of your project. First you have to define the general informations (generaly use by multiple server) and the different stage you have.</p>
+
+<pre><code># USER
+set :user,            "name"
+set :group,           "name"
+set :runner_group,    "name"
+
+# APP
+set :application,     "appName"
+set :stages,          %w(stage1 stage2)
+</code></pre>
+
+<p>The specific Drupal informations and if you have already or not <a href="https://drupal.org/project/drush">Drush</a> installed on your server (if your not sure, keep it TRUE).</p>
+
+<pre><code># DRUPAL
+set :app_path,        "drupal"
+set :shared_children, ['drupal/sites/default/files']
+set :shared_files,    ['drupal/sites/default/settings.php'] 
+set :download_drush,  true
+</code></pre>
+
+<p>Then, all the informations related to your Git repository</p>
+
+<pre><code>set :scm,            "git"
+set :repository,     "git@github.com:user/repo-name.git"
+</code></pre>
+
+<p>Finally, set the other Capistrano related options, the number of realeases you want and the cleanup at the end of the deployment.</p>
+
+<pre><code>set :use_sudo,       false
+default_run_options[:pty] = true
+ssh_options[:forward_agent] = true  
+role :app,           domain
+role :db,            domain
+
+set  :keep_releases,   5
+after "deploy:update", "deploy:cleanup" 
+</code></pre>
+
+<p>Awesome, your configuration file is almost complete ! From now and whenever you want to add a new stage, create an new file in <code>config/deploy/</code> with in :</p>
+
+<pre><code># Stage name (same as your filename, for example stage1.rb)
+set :stages,    "stage1"
+
+# The Git branch you want to use
+set :branch,    "dev"
+
+# The domain and the path to your app directory
+set :domain,    "staging.domain.com"
+set :deploy_to, "/home/path/to/my/app/"
+
+# And the user if it's not the same as define in deploy.rb
+set :user,           "staging"
+set :group,          "staging"
+set :runner_group,   "staging"
+</code></pre>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>So, after configuration come action ! The first time, you have to run this command with the choosing stage.</p>
+
+<pre><code>$ cap stage1 deploy:setup
+</code></pre>
+
+<p>In fact, Capistrano create directories and symlink to the targeted server. The <code>shared</code> directory contains all shared files of your app who don't need to be change. <code>Releases</code> contains the different releases of your app with a number define in <code>deploy.rb</code> and finally <code>current</code> is the symlink who target the right release.</p>
+
+<pre><code>myApp
+├── current -&gt; /home/myApp/releases/20130527070530
+├── releases
+│   ├── 20130527065508
+│   ├── 20130527065907
+│   └── 20130527070530
+└── shared
+</code></pre>
+
+<p>Now, every time you want to deploy you app !</p>
+
+<pre><code>$ cap stage1 deploy
+</code></pre>
+
+<p>And if some troubles occur, juste launch the rollback command to return to the previous release.</p>
+
+<pre><code>$ cap deploy:rollback
+</code></pre>
+
+<p>You should then be able to proceed as you would usually, you may want to familiarise yourself with the truncated list of tasks, you can get a full list with:</p>
+
+<pre><code>$ cap -T
+</code></pre>
+
+<p>This show a list of all avaible commands:</p>
+
+<pre><code>cap deploy                # Deploys your project.
+cap deploy:check          # Test deployment dependencies.
+cap deploy:cleanup        # Clean up old releases.
+cap deploy:cold           # Deploys and starts a `cold' application.
+cap deploy:create_symlink # Updates the symlink to the most recently deployed version.
+cap deploy:pending        # Displays the commits since your last deploy.
+cap deploy:pending:diff   # Displays the `diff' since your last deploy.
+cap deploy:rollback       # Rolls back to a previous version and restarts.
+cap deploy:rollback:code  # Rolls back to the previously deployed version.
+cap deploy:setup          # Prepares one or more servers for deployment.
+cap deploy:symlink        # Deprecated.
+cap deploy:update         # Copies your project and updates the symlink.
+cap deploy:update_code    # Copies your project to the remote servers.
+cap deploy:upload         # Copy files to the currently deployed version.
+cap dev                   # Set the target stage to `dev'.
+cap drupal:symlink_shared # Symlinks static directories and static files that need to remain between d...
+cap drush:backupdb        # Backup the database
+cap drush:cache_clear     # Clear the drupal cache
+cap drush:feature_revert  # Revert feature
+cap drush:get             # Gets drush and installs it
+cap drush:site_offline    # Set the site offline
+cap drush:site_online     # Set the site online
+cap drush:updatedb        # Run Drupal database migrations if required
+cap files:pull            # Pull drupal sites files (from remote to local)
+cap files:push            # Push drupal sites files (from local to remote)
+cap git:push_deploy_tag   # Place release tag into Git and push it to origin server.
+cap invoke                # Invoke a single command on the remote servers.
+cap multistage:prepare    # Stub out the staging config files.
+cap prod                  # Set the target stage to `prod'.
+cap shell                 # Begin an interactive Capistrano session.
+</code></pre>
+
+<h2>
+<a name="credits" class="anchor" href="#credits"><span class="octicon octicon-link"></span></a>Credits</h2>
+
+<p>Inspired by <a href="https://github.com/previousnext/capistrano-drupal">capistrano-drupal</a>.</p>
+
+<p>Made by <a href="http://www.antistatique.net">Antistatique</a> who's always looking for new talented developpers ! Just mail us on <a href="mailto:hello@antistatique.net">hello@antistatique.net</a>.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Capdrupal maintained by <a href="https://github.com/antistatique">antistatique</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-4367884-8");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
