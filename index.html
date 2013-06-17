@@ -39,26 +39,7 @@
 <h2>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
-<h3>
-<a name="vendors" class="anchor" href="#vendors"><span class="octicon octicon-link"></span></a>Vendors</h3>
-
-<p>Your Ruby version must be highter than 1.3.0 and these <a href="http://rubygems.org">gems</a> must be installed on your system first.</p>
-
-<ul>
-<li>capistrano</li>
-<li>railsless-deploy</li>
-</ul><p>One by one</p>
-
-<pre><code>$ gem install capistrano
-$ gem install railsless-deploy
-</code></pre>
-
-<p>If you don't know if it's already install, check the list of your installed gems.</p>
-
-<pre><code>$ gem query --local
-</code></pre>
-
-<p>Finally install the capistrano-drupal recipes as a gem or manually from Github.</p>
+<p><a href="http://rubygems.org">gems</a> must be installed on your system first.</p>
 
 <h3>
 <a name="from-rubygemsorg" class="anchor" href="#from-rubygemsorg"><span class="octicon octicon-link"></span></a>From RubyGems.org</h3>
@@ -89,8 +70,7 @@ $ capify .
 <p>Capistrano create two files <code>capfile</code> and <code>config/deploy.rb</code>. Open <code>capfile</code> and set the depencies.</p>
 
 <pre><code>require 'rubygems'
-require 'railsless-deploy'
-require 'capistrano-drupal'
+require 'capdrupal'
 load    'config/deploy'
 </code></pre>
 
